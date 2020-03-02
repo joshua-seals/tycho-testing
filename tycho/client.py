@@ -3,7 +3,7 @@ import ipaddress
 import json
 import logging
 import os
-#import git
+import git
 import shutil
 import sys
 import traceback
@@ -335,12 +335,10 @@ class TychoApps:
 
     def getmetadata(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
-        '''
         try:
             git.Git(base_dir).clone(self.repo_url)
         except Exception as e:
             print(f"Exception: {e}")
-        '''
         repo_path = os.path.join(base_dir, self.repo_name)
         apps_path = os.path.join(repo_path, self.apps_dir)
         for _, dnames, _ in os.walk(apps_path):
