@@ -71,10 +71,8 @@ class Volumes:
                             if os.path.isfile (host_path):
                                 data = None
                                 with open(host_path, "r") as stream:
-                                    '''
                                     data = base64.b64encode(
                                         stream.read ().encode("ISO-8859-1"))
-                                    '''
                                     data = codecs.encode(
                                         bytearray(stream.read (), 'utf-8'),
                                         'base64')
