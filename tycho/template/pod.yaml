@@ -42,6 +42,7 @@ spec:
 {% for container in system.containers %}    
   - name: {{ container.name }}
     image: {{ container.image }}
+#    imagePullPolicy: Never
 {% if container.command %}
     command: {{ container.command }}
 {% endif %}
@@ -72,8 +73,6 @@ spec:
       {% if container.limits.cpus != None %}
       limits:
         cpu: "{{ container.limits.cpus }}"
-        # https://kubernetes.io/docs/tasks/manage-gpus/scheduling-gpus/
-        #nvidia.com/gpu: "{{ container.limits.gpus }}"
         memory: "{{ container.limits.memory }}"
       {% endif %}
       {% endif %}
@@ -99,6 +98,13 @@ spec:
       readOnly: false
   {% endif %}
   {% endfor %}
+{% for configmap in system.configmaps %}
+  {% if container.name == configmap['container_name'] %}
+    - name: {{ configmap["volume_name"] }}
+      mountPath: {{ configmap["mount_path"] }}
+      readOnly: false
+  {% endif %}
+{% endfor %}  
   {% endif %}
 {% endfor %}
 
@@ -115,6 +121,13 @@ spec:
   {% endif %}
   {% endif %}
   {% endfor %}
+{% for configmap in system.configmaps %}
+  {% if container.name == configmap['container_name']%}
+    - name: {{ configmap["volume_name"] }}
+      configMap:
+        name: {{ configmap["configmap_key"] }}
+  {% endif %}
+{% endfor %}
   {% endif %}
   {% endfor %}
 

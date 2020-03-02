@@ -3,7 +3,7 @@ import ipaddress
 import json
 import logging
 import os
-import git
+#import git
 import shutil
 import sys
 import traceback
@@ -82,22 +82,6 @@ class TychoClient:
             for line in environment.split ("\n") if '=' in line
         }
         
-    def start0 (self, request):
-        """ Start a service. 
-        
-            The general format of a start request is::
-
-                {
-                   "name"   : <name of the system>,
-                   "env"    : <JSON dict created from .env environment variables>,
-                   "system" : <JSON of a docker-compose yaml>
-                }
-
-            :param request: A request object formatted as above.
-            :type request: JSON
-        """
-        return self.request ("start", request)
-        
     def start (self, request):
         """ Start a service. 
         
@@ -136,20 +120,6 @@ class TychoClient:
         """
         return self.request ("delete", request)
     
-    def status0 (self, request):
-        """ Get status of running systems.
-        
-            Get the status of a system by GUID or across systems.
-
-            The format of a request is::
- 
-                {}
-
-            :param request: Request formatted as above.
-            :type request: JSON
-        """
-        return self.request ("status", request)
-    
     def status (self, request):
         """ Get status of running systems.
         
@@ -164,61 +134,6 @@ class TychoClient:
         """
         response = self.request ("status", request)
         return TychoStatus (**response)
-            
-    def up0 (self, name, system, settings=""):
-        """ Bring a service up starting with a docker-compose spec. 
-        
-            CLI endpoint to start a service on the Tycho compute fabric.::
-
-                tycho up -f path/to/docker-compose.yaml
-
-            :param name: Name of the system.
-            :type name: str
-            :param system: Docker-compose JSON structure.
-            :type system: JSON
-            :param settings: The textual contents of a .env file.
-            :type settings: str
-        """
-        services = {}
-        for container_name, container in system['services'].items ():
-            if 'ports' in container.keys():
-                ports = container['ports']
-                for port in ports:
-                    port_num = int(port.split(':')[1] if ':' in port else port)
-                    services[container_name] = {
-                        "port" : port_num
-                        #"clients" : [ "192.16.1.179" ]
-                    }
-                    
-        request = {
-            "name"   : self.format_name (name),
-            "env"    : self.parse_env (settings),
-            "system" : system,
-            "services" : services
-        }
-        logger.debug (f"request: {json.dumps(request, indent=2)}")
-        response = self.start (request)
-        logger.debug (json.dumps(response,indent=2))
-        error = response.get('result',{}).get('error', None)
-        if error:
-            print (''.join (error))
-        else:
-            format_string = '{:<30} {:<35} {:<15} {:<7}'
-            print (format_string.format("SYSTEM", "GUID", "IP_ADDRESS", "PORT"))
-            result = response.get('result',{})
-            port='--'
-            ip_address='--'
-            for process, host_port in result.get('containers',{}).items ():
-                ip_address = host_port['ip_address']
-                port = host_port['port']
-            sid = result.get ('sid',  None)
-            item_name = result.get ('name', 'unknown').replace (f"-{sid}", "")
-            print (format_string.format (
-                TemplateUtils.trunc (item_name, max_len=28),
-                TemplateUtils.trunc (sid, max_len=33),
-                ip_address if ip_address else '--',
-                port))
-                #print (f"(minikube)=> http://192.168.99.111:{port}")
 
     def up (self, name, system, settings=""):
         """ Bring a service up starting with a docker-compose spec. 
@@ -236,13 +151,13 @@ class TychoClient:
         """
         services = {}
         for container_name, container in system['services'].items ():
-            ports = container['ports']
-            for port in ports:
-                port_num = int(port.split(':')[1] if ':' in port else port)
-                services[container_name] = {
-                    "port" : port_num
-                    #"clients" : [ "192.16.1.179" ]
-                }
+            if 'ports' in container:
+                ports = container['ports']
+                for port in ports:
+                    port_num = int(port.split(':')[1] if ':' in port else port)
+                    services[container_name] = {
+                        "port" : port_num
+                    }
                     
         request = {
             "name"   : self.format_name (name),
@@ -420,10 +335,12 @@ class TychoApps:
 
     def getmetadata(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
+        '''
         try:
             git.Git(base_dir).clone(self.repo_url)
         except Exception as e:
             print(f"Exception: {e}")
+        '''
         repo_path = os.path.join(base_dir, self.repo_name)
         apps_path = os.path.join(repo_path, self.apps_dir)
         for _, dnames, _ in os.walk(apps_path):

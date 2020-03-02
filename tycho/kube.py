@@ -63,7 +63,8 @@ class KubernetesCompute(Compute):
             :param namespace: Namespace to run the system in.
             :type namespace: str
         """
-        namespace = system.get_namespace()
+        if namespace == "default":
+            namespace = system.get_namespace()
         try:
             try:
                 api_response = self.api.list_config_map_for_all_namespaces()
@@ -80,23 +81,29 @@ class KubernetesCompute(Compute):
             pod_manifests = system.render ("pod.yaml")
             
             """ Render a persistent volume claim. """
-            pvc_manifests = system.render(template="pvc.yaml")
+            pvc_manifests = list(system.render(template="pvc.yaml"))
+            logger.debug (f"persistent-volume-claims generated: {len(pvc_manifests)}")
             """ Create persistent volume claims. """
             for pvc_manifest in pvc_manifests:
+                logger.debug (f"A PVC: {pvc_manifest['metadata']['name']}")
                 if pvc_manifest["metadata"]["name"] != "nfs":
+                    logger.debug (f"creating PVC: {json.dumps(pvc_manifest,indent=2)}")
                     response = self.api.create_namespaced_persistent_volume_claim(
                         namespace=namespace,
                         body=pvc_manifest)
-                    
+
             """ Render persistent volumes. """
-            pv_manifests = system.render(template="pv.yaml")
+            pv_manifests = list(system.render(template="pv.yaml"))
+            logger.debug (f"persistent-volumes generated: {len(pv_manifests)}")
             """ Create the persistent volumes. """
             for pv_manifest in pv_manifests:
+                logger.debug (f"Creating PV: {json.dumps(pv_manifest,indent=2)}")
                 response = self.api.create_persistent_volume(
                     body=pv_manifest)
-        
+
             """ Create a deployment for the pod. """
             for pod_manifest in pod_manifests:
+                logger.debug (f"Creating deployment: {json.dumps(pod_manifest,indent=2)}")
                 deployment = self.pod_to_deployment (
                     name=system.name,
                     template=pod_manifest,
