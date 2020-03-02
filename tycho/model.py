@@ -1,11 +1,8 @@
 import argparse
-import base64
-import codecs
 import logging
 import ipaddress
 import json
 import os
-import traceback
 import uuid
 import yaml
 from tycho.tycho_utils import TemplateUtils
@@ -41,7 +38,6 @@ class Volumes:
         self.identifier = identifier
         self.containers = containers
         self.volumes = []
-        self.configmaps = []
 
     def process_volumes(self):
         nfs_other_count = 0
@@ -62,37 +58,14 @@ class Volumes:
                 host_path = volume.split(":")[0]
                 requires_nfs = "no"
                 if "TYCHO_ON_MINIKUBE" in os.environ:
-                    logger.debug (f"--tycho on minikube")
                     if os.environ['TYCHO_ON_MINIKUBE'] == "True":
                         if host_path == "TYCHO_NFS":
                             continue
                         else:
-                            '''
-                            if os.path.isfile (host_path):
-                                data = None
-                                with open(host_path, "r") as stream:
-                                    data = base64.b64encode(
-                                        stream.read ().encode("ISO-8859-1"))
-                                    data = codecs.encode(
-                                        bytearray(stream.read (), 'utf-8'),
-                                        'base64')
-                                configmap_key = "configmap-{volume_name}"
-                                self.configmaps.append ({
-                                    "host_path" : host_path,
-                                    "container_name" : container_name,
-                                    "volume_name" : volume_name,
-                                    "configmap_key" : configmap_key,
-                                    "mount_path" : mount_path,
-                                    "binary_data" : data
-                                })
-                            else:
-                            '''
-                            logger.debug (f"--tycho on minikube {container_name} {volume_name} {claim_name} {mount_path} host_path:{host_path}")
                             self.volumes.append({
-                                "requires_nfs": requires_nfs,
                                 "container_name": container_name,
                                 "volume_name": volume_name,
-                                "claim_name": claim_name,
+                                "claim_name": claim_name, 
                                 "mount_path": mount_path,
                                 "host_path": host_path
                             })
@@ -109,8 +82,7 @@ class Volumes:
                             host_path = "NA"
                           requires_nfs = "yes"
                     except Exception as e:
-                       print(f"Requires NFS ----> {requires_nfs}")
-                    logger.debug (f"--tycho on minikube {container_name} {volume_name} {claim_name} {mount_path} disk:{disk_name}")
+                       print(f"Requires NFS ----> {requires_nfs}") 
                     self.volumes.append({
                         "requires_nfs": requires_nfs,
                         "container_name": container_name,
@@ -119,9 +91,8 @@ class Volumes:
                         "disk_name": disk_name,
                         "mount_path": mount_path,
                     })
-            return self.configmaps, self.volumes
+            return self.volumes
         except Exception as e:
-            traceback.print_exc ()
             print(f"VOLUMES----> Do not exist {e}")
     
 class Container:
@@ -209,7 +180,7 @@ class System:
         for name, service in self.services.items ():
             service.name = f"{name}-{self.identifier}"
             service.name_noid =  name
-        self.configmaps, self.volumes = Volumes(self.name, name, self.identifier, containers).process_volumes()
+        self.volumes = Volumes(self.name, name, self.identifier, containers).process_volumes()    
         self.source_text = None
 
     def get_namespace(self, namespace="default"):
