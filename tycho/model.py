@@ -5,6 +5,7 @@ import json
 import os
 import uuid
 import yaml
+from string import Template
 from tycho.tycho_utils import TemplateUtils
 
 logger = logging.getLogger (__name__)
@@ -149,7 +150,7 @@ class Container:
 
 class System:
     """ Distributed system of interacting containerized software. """
-    def __init__(self, config, name, containers, services={}):
+    def __init__(self, config, identifier, name, containers, services={}):
         """ Construct a new abstract model of a system given a name and set of containers.
         
             Serves as context for the generation of compute cluster specific artifacts.
@@ -162,7 +163,7 @@ class System:
             :type containers: list of containers
         """
         self.config = config
-        self.identifier = uuid.uuid4().hex
+        self.identifier = identifier
         self.system_name = name
         self.name = f"{name}-{self.identifier}"
         assert self.name is not None, "System name is required."
@@ -221,17 +222,15 @@ class System:
             :param services: Service specifications - networking configuration.
         """
         containers = []
-        if env:
-            logger.debug ("applying environment settings.")
-            system_template = yaml.dump (system)
-            print (json.dumps(env,indent=2))
-            system_rendered = TemplateUtils.render_text (
-                template_text=system_template,
-                context=env)
-            logger.debug (f"applied settings:\n {system_rendered}")
-            for system_render in system_rendered:
-                system = system_render
-
+        identifier = uuid.uuid4().hex
+        env = env if env else {}
+        logger.debug ("applying environment settings.")
+        system_template = yaml.dump (system)
+        env['app'] = f"{name}-{identifier}"
+        system_rendered = Template (system_template).substitute (**env)
+        system = yaml.load (system_rendered)
+        logger.debug (f"applied settings:\n {json.dumps(system,indent=2)}")
+    
         """ Model each service. """
         logger.debug (f"compose {system}")
         for cname, spec in system.get('services', {}).items ():
@@ -268,6 +267,7 @@ class System:
             })
         system_specification = {
             "config"     : config,
+            "identifier" : identifier,
             "name"       : name,
             "containers" : containers
         }
