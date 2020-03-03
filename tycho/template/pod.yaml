@@ -16,7 +16,7 @@ metadata:
     executor: tycho
     tycho-guid: {{ system.identifier }}
 spec:
-{% for container in system.containers %}
+{% for container in system.containers if container.replicas == 1 %}
   {% if container.limits or container.requests %}
   {% if container.limits.gpus != None and loop.first %}
   nodeSelector:
@@ -29,7 +29,7 @@ spec:
   {% endif %}
 {% endfor %}
   initContainers:
-{% for container in system.containers %}
+{% for container in system.containers if container.replicas == 1 %}
   {% if container.depends_on|length > 0 %}
   {% for d in container.depends_on %}
   - name: init-{{ container.name}}-{{loop.index}}
@@ -39,10 +39,10 @@ spec:
   {% endif %}
 {% endfor %}
   containers:
-{% for container in system.containers %}    
+{% for container in system.containers if container.replicas == 1 %}    
   - name: {{ container.name }}
     image: {{ container.image }}
-#    imagePullPolicy: Never
+    imagePullPolicy: {{ system.image_pull_policy () }}
 {% if container.command %}
     command: {{ container.command }}
 {% endif %}
@@ -110,7 +110,7 @@ spec:
 
   volumes:
 # Changes
-{% for container in system.containers %}
+{% for container in system.containers if container.replicas == 1 %}
 {% if container.volumes %}
 {% for volume in system.volumes %}
   {% if container.name == volume['container_name']%}

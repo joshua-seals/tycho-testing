@@ -137,6 +137,7 @@ class Container:
         self.requests = Limits(**requests) if isinstance(requests, dict) else requests
         if isinstance(self.limits, list):
             self.limits = self.limits[0] # TODO - not sure why this is a list.
+        logger.debug (f"------------> {replicas}")
         assert int(replicas) > 0, "Number of replicas must be a positive integer"
         self.replicas = replicas
         self.ports = ports
@@ -154,7 +155,7 @@ class Container:
 
 class System:
     """ Distributed system of interacting containerized software. """
-    def __init__(self, config, name, containers, services={}):
+    def __init__(self, config, identifier, name, containers, services={}):
         """ Construct a new abstract model of a system given a name and set of containers.
         
             Serves as context for the generation of compute cluster specific artifacts.
@@ -167,7 +168,7 @@ class System:
             :type containers: list of containers
         """
         self.config = config
-        self.identifier = uuid.uuid4().hex
+        self.identifier = identifier
         self.system_name = name
         self.name = f"{name}-{self.identifier}"
         assert self.name is not None, "System name is required."
@@ -190,6 +191,9 @@ class System:
 
     def on_minikube (self):
         return os.environ.get ("TYCHO_ON_MINIKUBE", None) == "True"
+
+    def image_pull_policy (self):
+        return "IfNotPresent" if self.on_minikube () else "OnFailure" 
     
     def get_namespace(self, namespace="default"):
         try:
@@ -229,23 +233,18 @@ class System:
             :param services: Service specifications - networking configuration.
         """
         containers = []
-        if env:
-            """ Make resolution of $x and ${x} to work. """
-            doc = yaml.load (f"{env}")
-            logger.debug ("applying environment settings.")            
-            system_template = yaml.dump (system)
-            logger.debug (f"settings => {json.dumps(env,indent=2)}")
-            logger.debug (f"{system_template}")
-            system_rendered = Template(system_template).substitute (**env)
-            '''
-            system_rendered = TemplateUtils.render_text (
-                template_text=system_template,
-                context=env)
-            '''
-            logger.debug (f"applied settings:\n {system_rendered}")
-            for system_render in system_rendered:
-                system = system_render
-        return None
+
+        """ Create an identifier for the system, form the system's unique name, and register that name
+        as a special variable app configuration files can reference. """
+        identifier = uuid.uuid4().hex
+        env = env if env else {}
+        logger.debug ("applying environment settings.")
+        system_template = yaml.dump (system)
+        """ Will need to generalize to reference all potential components of a deployment topology. """
+        env['app'] = f"{name}-{identifier}"
+        system_rendered = Template (system_template).safe_substitute (**env)
+        system = yaml.load (system_rendered)
+        logger.debug (f"applied settings:\n {json.dumps(system,indent=2)}")
     
         """ Model each service. """
         logger.debug (f"compose {system}")
@@ -276,7 +275,7 @@ class System:
                 "env"     : spec.get ('env', []) or spec.get('environment', []),
                 "limits"  : spec.get ('deploy',{}).get('resources',{}).get('limits',{}),
                 "requests"  : spec.get ('deploy',{}).get('resources',{}).get('reservations',{}),
-                "replicas" : spec.get ('deploy',{}).get('replicas',{}),
+                "replicas" : spec.get ('deploy',{}).get('replicas',1),
                 "ports"   : ports,
                 "expose"  : expose,
                 "depends_on": spec.get("depends_on", []),
@@ -284,6 +283,7 @@ class System:
             })
         system_specification = {
             "config"     : config,
+            "identifier" : identifier,
             "name"       : name,
             "containers" : containers
         }

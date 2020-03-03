@@ -11,7 +11,7 @@ services:
     image: heliumdatastage/spark
     environment:
       - SPARK_MODE=master
-      - SPARK_MASTER_HOST=localhost
+      - SPARK_MASTER_HOST=0.0.0.0
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
@@ -24,9 +24,9 @@ services:
     image: heliumdatastage/spark
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://${spark_7077_host_port}
-      - SPARK_WORKER_MEMORY=${cluster_worker_memory}G
-      - SPARK_WORKER_CORES=${cluster_worker_cores}
+      - SPARK_MASTER_URL=spark://$app:7077
+      - SPARK_WORKER_MEMORY=${spark_worker_memory}
+      - SPARK_WORKER_CORES=${spark_worker_cores}
       - SPARK_RPC_AUTHENTICATION_ENABLED=no
       - SPARK_RPC_ENCRYPTION_ENABLED=no
       - SPARK_LOCAL_STORAGE_ENCRYPTION_ENABLED=no
@@ -34,16 +34,18 @@ services:
     deploy:
       mode: replicated
       replicas: ${cluster_worker_replicas}
+      resources:
+        limits:
+          cpus: '${cluster_worker_cores}'
+          memory: ${cluster_worker_memory}
+        reservations:
+          cpus: '${cluster_worker_cores}'
+          memory: ${cluster_worker_memory}
       restart_policy:
         condition: on-failure
         delay: 5s
         max_attempts: 5
         window: 60s
-      resources:
-        limits:
-          cpus: '${cluster_worker_cores}'
-          memory: ${cluster_worker_memory}G
-        reservations:
-          cpus: '${cluster_worker_cores}'
-          memory: ${cluster_worker_memory}G
+
+
 

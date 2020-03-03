@@ -114,8 +114,6 @@ class KubernetesCompute(Compute):
             logger.debug (f"deployments generated: {len(deployments)}")
             for deployment_spec in deployments:
                 logger.debug (f"creating deployment: {json.dumps(deployment_spec,indent=2)}")
-                """ Create the deployment. """
-                logger.debug (f"applying deployment {template}")
                 api_response = self.extensions_api.create_namespaced_deployment(
                     body=deployment_spec,
                     namespace=namespace)
