@@ -227,7 +227,7 @@ class System:
         logger.debug ("applying environment settings.")
         system_template = yaml.dump (system)
         env['app'] = f"{name}-{identifier}"
-        system_rendered = Template (system_template).substitute (**env)
+        system_rendered = Template (system_template).safe_substitute (**env)
         system = yaml.load (system_rendered)
         logger.debug (f"applied settings:\n {json.dumps(system,indent=2)}")
     
