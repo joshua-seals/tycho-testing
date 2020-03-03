@@ -1,4 +1,5 @@
 import os
+import uuid
 import json
 import yaml
 from tycho.model import System
@@ -10,6 +11,7 @@ def test_system_model (request):
     print (f"{request.node.name}")
     system = System (**{
         "config"     : Config (),
+        "identifier" : uuid.uuid4().hex,
         "name"       : "test",
         "containers" : [
             {
