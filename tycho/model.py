@@ -5,6 +5,7 @@ import json
 import os
 import uuid
 import yaml
+from string import Template
 from tycho.tycho_utils import TemplateUtils
 
 logger = logging.getLogger (__name__)
@@ -105,6 +106,7 @@ class Container:
                  identity=None,
                  limits=None,
                  requests=None,
+                 replicas=1,
                  ports=[],
                  expose=[],
                  depends_on=None,
@@ -121,6 +123,7 @@ class Container:
             :param limits: Resource limits
             :type limits: dict
             :param requests: Resource requests
+            :param replicas: Number of instances required
             :type limits: dict
             :param ports: Container ports to expose.
             :type ports: list of int
@@ -134,6 +137,8 @@ class Container:
         self.requests = Limits(**requests) if isinstance(requests, dict) else requests
         if isinstance(self.limits, list):
             self.limits = self.limits[0] # TODO - not sure why this is a list.
+        assert int(replicas) > 0, "Number of replicas must be a positive integer"
+        self.replicas = replicas
         self.ports = ports
         self.expose = expose
         self.depends_on = depends_on
@@ -183,6 +188,9 @@ class System:
         self.volumes = Volumes(self.name, name, self.identifier, containers).process_volumes()    
         self.source_text = None
 
+    def on_minikube (self):
+        return os.environ.get ("TYCHO_ON_MINIKUBE", None) == "True"
+    
     def get_namespace(self, namespace="default"):
         try:
            with open("/var/run/secrets/kubernetes.io/serviceaccount/namespace", "r") as secrets:
@@ -222,16 +230,23 @@ class System:
         """
         containers = []
         if env:
-            logger.debug ("applying environment settings.")
+            """ Make resolution of $x and ${x} to work. """
+            doc = yaml.load (f"{env}")
+            logger.debug ("applying environment settings.")            
             system_template = yaml.dump (system)
-            print (json.dumps(env,indent=2))
+            logger.debug (f"settings => {json.dumps(env,indent=2)}")
+            logger.debug (f"{system_template}")
+            system_rendered = Template(system_template).substitute (**env)
+            '''
             system_rendered = TemplateUtils.render_text (
                 template_text=system_template,
                 context=env)
+            '''
             logger.debug (f"applied settings:\n {system_rendered}")
             for system_render in system_rendered:
                 system = system_render
-
+        return None
+    
         """ Model each service. """
         logger.debug (f"compose {system}")
         for cname, spec in system.get('services', {}).items ():
@@ -261,6 +276,7 @@ class System:
                 "env"     : spec.get ('env', []) or spec.get('environment', []),
                 "limits"  : spec.get ('deploy',{}).get('resources',{}).get('limits',{}),
                 "requests"  : spec.get ('deploy',{}).get('resources',{}).get('reservations',{}),
+                "replicas" : spec.get ('deploy',{}).get('replicas',{}),
                 "ports"   : ports,
                 "expose"  : expose,
                 "depends_on": spec.get("depends_on", []),

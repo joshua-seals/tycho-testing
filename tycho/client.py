@@ -78,7 +78,7 @@ class TychoClient:
 
     def parse_env (self, environment):
         return {
-            line.split("=", maxsplit=1)[0] : line.split("=", maxsplit=1)[1]
+            line.split("=", maxsplit=1)[0].strip() : line.split("=", maxsplit=1)[1].strip ()
             for line in environment.split ("\n") if '=' in line
         }
         
@@ -206,7 +206,8 @@ class TychoClient:
                     print ('None running')
                 else:
                     format_string = '{:<30} {:<35} {:<15} {:<7} {:<1}'
-                    print (format_string.format("SYSTEM", "GUID", "IP_ADDRESS", "PORT", "CREATION_TIME"))
+                    print (format_string.format(
+                        "SYSTEM", "GUID", "IP_ADDRESS", "PORT", "CREATION_TIME"))
                     for service in response.services:
                         print (format_string.format (
                             TemplateUtils.trunc (service.name, max_len=28),
@@ -361,8 +362,10 @@ if __name__ == "__main__":
     status_command="@status_command"
     parser = argparse.ArgumentParser(description='Tycho Client')
     parser.add_argument('-u', '--up', help="Launch service.", action='store_true')
-    parser.add_argument('-s', '--status', help="Get status of running systems.", nargs='?', const=status_command, default=None)
-    parser.add_argument('-d', '--down', help="Delete a running system. Requires a system id.", nargs='*')
+    parser.add_argument('-s', '--status', help="Get status of running systems.", nargs='?',
+                        const=status_command, default=None)
+    parser.add_argument('-d', '--down', help="Delete a running system. Requires a system id.",
+                        nargs='*')
     parser.add_argument('-p', '--port', type=int, help="Port to expose.")
     parser.add_argument('-c', '--container', help="Container to run.")
     parser.add_argument('-n', '--name', help="Service name.")
@@ -371,8 +374,8 @@ if __name__ == "__main__":
     parser.add_argument('--command', help="Container command", default=None)
     parser.add_argument('--settings', help="Environment settings", default=None)
     parser.add_argument('-f', '--file', help="A docker compose (subset) formatted system spec.")
-    parser.add_argument('-a', '--app', help="Name of the app. Should be one of the apps available in app-support-prototype repo")
-    parser.add_argument('-t', '--trace', help="Trace (debug) logging", action='store_true', default=False)
+    parser.add_argument('-a', '--app', help="Name of the app in the app-support-prototype repo")
+    parser.add_argument('-t', '--trace', help="Trace (debug)", action='store_true', default=False)
     parser.add_argument('--terse', help="Keep status short", action='store_true', default=False)
     parser.add_argument('-v', '--volumes', help="Mounts a volume", default=None)
     args = parser.parse_args ()

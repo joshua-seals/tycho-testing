@@ -109,6 +109,17 @@ class KubernetesCompute(Compute):
                     template=pod_manifest,
                     namespace=namespace)
 
+            """ Create deployments for multi-replica containers. """
+            deployments = list(system.render (template="deployment.yaml"))
+            logger.debug (f"deployments generated: {len(deployments)}")
+            for deployment_spec in deployments:
+                logger.debug (f"creating deployment: {json.dumps(deployment_spec,indent=2)}")
+                """ Create the deployment. """
+                logger.debug (f"applying deployment {template}")
+                api_response = self.extensions_api.create_namespaced_deployment(
+                    body=deployment_spec,
+                    namespace=namespace)
+
             """ Create a network policy if appropriate. """
             if system.requires_network_policy ():
                 logger.debug ("creating network policy")
@@ -140,10 +151,10 @@ class KubernetesCompute(Compute):
                         if counter == 1:
                             """ Get IP address of allocated ingress (or minikube). """
                             for i in range(0, 200):
-                                status_response = self.api.read_namespaced_service_status(name=response.metadata.name, namespace=namespace)
+                                status_response = self.api.read_namespaced_service_status(
+                                    name=response.metadata.name, namespace=namespace)
                                 if status_response.status.load_balancer.ingress is None:
                                     sleep(1)
-                                    continue
                                 elif "TYCHO_ON_MINIKUBE" in os.environ:
                                     break
                                 else:
@@ -151,7 +162,8 @@ class KubernetesCompute(Compute):
                                     break
                         ip_address = self.get_service_ip_address (response)
                         logger.debug (f"service {container.name} ingress ip: {ip_address}")
-                    
+
+                        system.services[container.name]
                         """ Return generated node ports to caller. """
                         for port in response.spec.ports:
                             container_map[container.name] = {
@@ -162,10 +174,12 @@ class KubernetesCompute(Compute):
 
             
             try:
-                api_response = self.rbac_api.list_cluster_role(label_selector=f"name={system.system_name}")
+                api_response = self.rbac_api.list_cluster_role(
+                    label_selector=f"name={system.system_name}")
                 if len(api_response.items) == 0:
                     logger.debug("creating cluster role")
-                    cluster_role_manifests = system.render(f"cluster/{system.system_name}/clusterrole.yaml")
+                    cluster_role_manifests = system.render(
+                        f"cluster/{system.system_name}/clusterrole.yaml")
                     for cluster_role_manifest in cluster_role_manifests:
                         logger.debug(f"applying cluster role: {cluster_role_manifest}")
                         api_response = self.rbac_api.create_cluster_role(body=cluster_role_manifest)
@@ -175,10 +189,12 @@ class KubernetesCompute(Compute):
             
             try:
                 logger.debug("creating cluster role binding")
-                cluster_role_binding_manifests = system.render(template=f"{system.system_name}/clusterrolebinding.yaml")
+                cluster_role_binding_manifests = system.render(
+                    template=f"{system.system_name}/clusterrolebinding.yaml")
                 for cluster_role_binding_manifest in cluster_role_binding_manifests:
                     logger.debug(f"applying cluster role binding: {cluster_role_binding_manifest}")
-                    api_response = self.rbac_api.create_cluster_role_binding(body=cluster_role_binding_manifest)
+                    api_response = self.rbac_api.create_cluster_role_binding(
+                        body=cluster_role_binding_manifest)
             except Exception as e:
                 logger.error(f"cannot create cluster role binding: {e}")
                 traceback.print_exc (file=open("clusterrolebindinglogs.txt", "a"))
