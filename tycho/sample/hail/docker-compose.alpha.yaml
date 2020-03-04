@@ -24,7 +24,7 @@ services:
     image: heliumdatastage/spark
     environment:
       - SPARK_MODE=worker
-      - SPARK_MASTER_URL=spark://$app:7077
+      - SPARK_MASTER_URL=spark://spark-${app_id}:7077
       - SPARK_WORKER_MEMORY=${spark_worker_memory}
       - SPARK_WORKER_CORES=${spark_worker_cores}
       - SPARK_RPC_AUTHENTICATION_ENABLED=no

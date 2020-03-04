@@ -41,6 +41,21 @@ class Volumes:
         self.volumes = []
 
     def process_volumes(self):
+        """
+        Cases:
+        1. TYCHO_NFS is the host_path: 
+            * This means we expect a preexisting RWM PVC called nfs.
+            * We will not attempt to create anything.
+           a. TYCHO_NFS is the host path prefix. But we really want a subdirectory of what's on that PV:
+                  like this: TYCHO_NFS/cloud-top
+                  But, does a PV support specifying a subdirectory?
+        2. If we don't have a pre-existing RWM pvc then we could create one  ... but:
+           a. We do not support host paths.
+           b. We do not support disks.
+
+        Questions: 
+            Why is there a gpu-disk vs default-disk
+        """
         nfs_other_count = 0
         try:
             for i in range(0, len(self.containers)):
@@ -241,6 +256,7 @@ class System:
         logger.debug ("applying environment settings.")
         system_template = yaml.dump (system)
         """ Will need to generalize to reference all potential components of a deployment topology. """
+        env['app_id'] = identifier
         env['app'] = f"{name}-{identifier}"
         system_rendered = Template (system_template).safe_substitute (**env)
         system = yaml.load (system_rendered)
