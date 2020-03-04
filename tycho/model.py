@@ -49,6 +49,8 @@ class Volumes:
            a. TYCHO_NFS is the host path prefix. But we really want a subdirectory of what's on that PV:
                   like this: TYCHO_NFS/cloud-top
                   But, does a PV support specifying a subdirectory?
+                  - We can specify a sub-directory in the PV that is exported by the NFS server. 
+                    That sub-directory has to exist on the persistent disk mounted onto the NFS server pod.
         2. If we don't have a pre-existing RWM pvc then we could create one  ... but:
            a. We do not support host paths.
            b. We do not support disks.
