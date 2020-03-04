@@ -73,8 +73,8 @@ services:
   #   Note that the worker connects to the master using the URL:  spark://spark-${app_id}:${spark_master_port} 
   #     The ${app_id} is a GUID defined by the app launching infrastructure for this instance.
   #     The hostname of other containers in this app is given by <other-container-hostname>-${app_id}
-  #     Since the master is called spark and listens for Spark connections on port 7077. 
-  # This container also uses docker-compose v3.0 metadat for specifying deployment characteristics.
+  #     The master is called spark and listens on port ${spark_master_port}, hence spark://spark-${app_id}:${spark_master_port}
+  # This container uses docker-compose v3.0 metadata for specifying deployment characteristics.
   #   These include replicas, CPU and memory requirements, etc.
   #   Number of instances is controlled by the cluster_worker_replicas environment setting.
   #   
