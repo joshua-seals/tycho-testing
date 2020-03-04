@@ -2,7 +2,7 @@ version: '3.0'
 
 ##################################################################################################
 #
-# This application creates a Hail workspace.
+# This application defines a Hail workspace.
 #   Hail provides scalable genomic data tools.
 #   It is a library for the Apache Spark analytics cluster system.
 #   The workspace also provides JupyterLab as a front end to the system.
@@ -23,6 +23,15 @@ version: '3.0'
 #   spark_worker_memory: The amount of memory for the Spark worker process in the container
 #        to request.
 #
+# ----------------------------------------------------------------------------------------------
+#
+# The proof of concept uses Tycho[1] on Kubernetes as the execution environment.
+#   Tycho generates Kubernetes artifacts based on docker-compose metadata.
+#   It is now able to model horizontally scalable deployments.
+#   Workers are scaled according to the launch configuration and all connect to the master.
+#
+# 1. Tycho: https://github.com/helxplatform/tycho
+# 
 services:
 
   # A non-root container for JupyterLab.
@@ -34,8 +43,8 @@ services:
     ports:
       - '${jupyter_port}:8000'
 
-  # This is the bitnami spark container, a minimalist, non-root image with
-  # good configuration options.
+  # This is the bitnami spark container, a minimalist, ubuntu based, non-root image with
+  # good configuration options and support for recent spark versions.
   spark:
     image: heliumdatastage/spark
     environment:
@@ -50,15 +59,16 @@ services:
       - '${spark_master_port}:7077'
 
   # The worker process uses the same image as the master and can be scaled up or down.
-  # Number of instances is controlled by the cluster_worker_replicas environment setting.
-  # Each replica must be able to connect to the master.
-  # The ${app_id} is a GUID defined by the app launching infrastructure for this instance.
-  # The hostname of other  containers in this app is given by <hostname>-${app_id}
-  # Since the master is called spark and listens for Spark connections on port 7077, the worker connects to it as
-  # spark://spark-${app_id}:${spark_master_port}
   #
+  # Each replica must be able to connect to the master.
+  #   Note that the worker connects to the master using the URL:  spark://spark-${app_id}:${spark_master_port} 
+  #     The ${app_id} is a GUID defined by the app launching infrastructure for this instance.
+  #     The hostname of other containers in this app is given by <other-container-hostname>-${app_id}
+  #     Since the master is called spark and listens for Spark connections on port 7077. 
   # This container also uses docker-compose v3.0 metadat for specifying deployment characteristics.
-  # These include replicas, CPU and memory requirements, etc.
+  #   These include replicas, CPU and memory requirements, etc.
+  #   Number of instances is controlled by the cluster_worker_replicas environment setting.
+  #   
   spark-worker:
     image: heliumdatastage/spark
     environment:
