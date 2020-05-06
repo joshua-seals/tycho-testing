@@ -41,12 +41,12 @@ contexts:
   common:
     name: HeLx Common App Registry
     apps:
-      cloudtop:
+      cloud-top:
         name: CloudTop
-        spec: ${catalyst_apps}/cloudtop/docker-compose.yaml
-        icon: ${catalyst_apps}/cloudtop/icon.png
-        descripton: CloudTop is a cloud native, browser accessible Linux desktop.
-        details: It presents an Ubuntu graphical desktop environment with zero install.
+        spec: ${catalyst_apps}/cloud-top/docker-compose.yaml
+        icon: ${catalyst_apps}/cloud-top/icon.png
+        description: CloudTop is a cloud native, browser accessible Linux desktop.
+        details: A Ubuntu graphical desktop environment for experimenting with native applications in the cloud.
         docs: https://helxplatform.github.io/cloudtop-docs/
         services:
           cloudtop : 8080
@@ -54,7 +54,7 @@ contexts:
         name: Jupyter Data Science
         spec: ${catalyst_apps}/jupyter-ds/docker-compose.yaml
         icon: ${catalyst_apps}/jupyter-ds/icon.png
-        descripton: Jupyter DataScience: A Jupyter notebook for exploring and visualizing data.
+        description: Jupyter DataScience - A Jupyter notebook for exploring and visualizing data.
         details: Includes R, Julia, and Python.
         docs: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-datascience-notebook
         services:
@@ -63,7 +63,7 @@ contexts:
         name: R Studio Server
         spec: ${catalyst_apps}/rstudio-server/docker-compose.yaml
         icon: ${catalyst_apps}/rstudio-server/icon.png
-        descripton: R Studio Server is a web based notebook environment for R development.
+        description: R Studio Server is a web based notebook environment for R development.
         details: Provides notebook computing experience with the R Studio development environment.
         docs: https://rstudio.com/products/rstudio/
         services:
@@ -77,7 +77,7 @@ contexts:
         name: ImageJ Viewer
         spec: ${catalyst_apps}/imagej/docker-compose.yaml
         icon: ${catalyst_apps}/imagej/icon.png
-        descripton: ImageJ/Napari: Imagej is an image processor developed at NIH/LOCI.
+        description: ImageJ/Napari - Imagej is an image processor developed at NIH/LOCI.
         details: Napari enables multi-dimensional image viewing, annotation and analysis.
         docs: https://imagej.nih.gov/ij/
         services:
@@ -87,7 +87,7 @@ contexts:
         name: Napari Image Viewer
         spec: ${catalyst_apps}/imagej/docker-compose.yaml
         icon: ${catalyst_apps}/imagej/icon.png
-        descripton: Napari is a fast, interactive, multi-dimensional image viewer.
+        description: Napari is a fast, interactive, multi-dimensional image viewer.
         details: It enables browsing, annotating, and analyzing large multi-dimensional images.
         docs: https://napari.org/
         services:
@@ -101,7 +101,7 @@ contexts:
         name: DICOM Viewer
         spec: ${catalyst_apps}/dicom-cloudtop/docker-compose.yaml
         icon: ${catalyst_apps}/dicom-cloudtop/icon.png
-        descripton: OHIF is a framework for building medical imaging web applications.
+        description: OHIF is a framework for building medical imaging web applications.
         details: Uses the OrthaNC DICOM service for indexing image data.
         docs: https://ohif.org/
         services:
@@ -111,7 +111,7 @@ contexts:
         name: Autoencoder Notebook
         spec: ${catalyst_apps}/helx-autoencoder/docker-compose.yaml
         icon: ${catalyst_apps}/helx-autoencoder/icon.png
-        descripton: ___________________________________________________
+        description: ___________________________________________________
         details: ___________________________________________________
         docs: http://we.need.autoencoder.docs/doc.html # TODO: need these
         services:
@@ -134,7 +134,7 @@ contexts:
         name: Nextflow API
         spec: ${catalyst_apps}/nextflow/docker-compose.yaml
         icon: ${catalyst_apps}/nextflow/icon.png
-        descripton: Nextflow: A scalable workflow computational pipeline workspace.
+        description: Nextflow - A scalable workflow computational pipeline workspace.
         details: Orchestrate Docker containers into reproducible workflows.
         docs: https://github.com/SciDAS/nextflow-api
         services:
@@ -143,7 +143,7 @@ contexts:
         name: GSForge
         spec: ${catalyst_apps}/gsforge/docker-compose.yaml
         icon: ${catalyst_apps}/gsforge/icon.png
-        descripton: >
+        description: >
           GSForge is a Python package that assists researchers in the selection of gene sets with
           potential association to an experimental condition or phenotypic trait.
         details: Offers new potential hypotheses for gene-trait causality.
@@ -159,7 +159,7 @@ contexts:
         name: Blackbalsam
         spec: ${catalyst_apps}/blackbalsam/docker-compose.yaml
         icon: ${catalyst_apps}/blackbalsam/icon.png
-        descripton: Blackbalsam is a notebook AI, visualization, and parallel computing environment.
+        description: Blackbalsam is a notebook AI, visualization, and parallel computing environment.
         details: Provides AI(Tensorflow,PyTorch) Vis(Plotly,Bokeh,Seaborn) Compute(Apache Spark) and Minio S3 interfaces.
         docs: https://github.com/stevencox/blackbalsam
         services:
