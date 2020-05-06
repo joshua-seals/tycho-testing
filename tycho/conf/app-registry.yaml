@@ -98,12 +98,11 @@ contexts:
         name: DICOM Viewer
         spec: ${catalyst_apps}/dicom-cloudtop/docker-compose.yaml
         icon: ${catalyst_apps}/dicom-cloudtop/icon.png
-        descripton: ___________________________________________________
-        # TODO: Dicom specific docs
-        docs: https://helxplatform.github.io/cloudtop-docs/
+        descripton: OHIF is a framework for building medical imaging web applications.
+        docs: https://ohif.org/
         services:
           cloudtop : 8080
-      # TODO: is this just jupyter-ds with access to autoencoder python modules? If so, delete.
+      # TODO: is this just jupyter-ds with access to autoencoder python modules? If so, delete this app.
       autoencoder-notebook:
         name: Autoencoder Notebook
         spec: ${catalyst_apps}/helx-autoencoder/docker-compose.yaml
@@ -117,7 +116,7 @@ contexts:
         spec: ${catalyst_apps}/hail/docker-compose.yaml
         icon: ${catalyst_apps}/hail/icon.png
         description: A notebook computing interface to a large single node Hail genomics workspace.
-        docs: https://github.com/helxplatform/helx-hail # TODO: Better docs.
+        docs: https://github.com/helxplatform/helx-hail # TODO: Make proper docs.
         services:
           jupyter : 8888
   scidas:

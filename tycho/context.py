@@ -4,10 +4,11 @@ import os
 import requests
 import requests_cache
 import traceback
+import uuid
 import yaml
 from requests_cache import CachedSession
 from string import Template
-from tycho.client import TychoClientFactory
+from tycho.client import TychoClientFactory, TychoStatus, TychoSystem
 from tycho.exceptions import ContextException
 
 logger = logging.getLogger (__name__)
@@ -82,9 +83,19 @@ class TychoContext:
         }
         """ Compile URLs to resolve repository variables. """
         for name, app in context.get('apps',{}).items ():
+            if not 'spec' in app:
+                repos = list(repository_map.items())
+                if len(repos) == 0:
+                    raise ValueError ("No spec URL and no repositories specified.")
+                repo_url = repos[0][0]
+                app['spec'] = f"{repo_url}/{name}/docker-compose.yaml"
+            spec_url = app['spec']
+            app['icon'] = os.path.join (os.path.dirname (spec_url), "icon.png")
             for key in [ 'spec', 'icon', 'docs' ]:
                 url = app[key]
                 app[key] = Template(url).safe_substitute (repository_map)
+            logger.debug (f"-- spec: {app['spec']}")
+            logger.debug (f"-- icon: {app['icon']}")
         logger.debug (f"-- product {self.product} resolution => apps: {apps.keys()}")
         return apps
     
@@ -127,7 +138,7 @@ class TychoContext:
                 env = ""
             self.apps[app_id]['env_obj'] = env
         return env
-    
+
     def start (self, principal, app_id):
         """ Get application metadata, docker-compose structure, settings, and compose API request. """
         spec = self.get_spec (app_id)
@@ -144,7 +155,11 @@ class TychoContext:
                 "services"   : services
             })
             """ Validate resulting interfaces. """
-            """ TODO: check returned status. """
+            """
+            TODO: 
+              1. Check returned status.
+              2. The Ambassador based URL removes the need to pass back a port. Confirm & delete port code.
+            """
             running = { v.name : v.port for v in system.services }
             for name, port in services.items ():
                 assert name in running, f"Svc {name} expected but {services.keys()} actually running."            
@@ -158,3 +173,60 @@ class TychoContext:
         Also provides an anchor point to mock the service in unit tests.
         """
         return self.client.start (request)
+
+class NullContext (TychoContext):
+    """
+    A null context to facilitate client development.
+    """
+    def __init__(self, registry_config="app-registry.yaml", product="common"):
+        super ().__init__()
+    def status (self, request=None):
+        """ Make up some rows. """
+        return TychoStatus (**{
+            "status" : "success",
+            "result" : [
+                {
+                    "name"          : f"jupyter-{str(uuid.uuid4 ())}",
+                    "sid"           : str(uuid.uuid4 ()),
+                    "ip_address"    : 'x.y.z.m',
+                    "port"          : "8080",
+                    "creation_time" : "time"
+                } for x in range(8000, 8005)
+            ],
+            "message" : "..."
+        })
+    def delete (self, request):
+        """ Ingore deletes. """
+        logger.debug (f"-- delete: {request}")
+        
+    def start (self, principal, app_id):
+        logger.debug (f"-- start: {principal} {app_id}")        
+        spec = self.get_spec (app_id)
+        #settings = self.client.parse_env (self.get_settings (app_id))
+        settings = self._parse_env (self.get_settings (app_id))
+        services = self.apps[app_id]['services']
+        return TychoSystem (**{
+        "status" : "ok",
+        "result" : {
+            "name"       : self.apps[app_id]['name'],
+            "sid"        : uuid.uuid4 (),
+            "containers" :  {
+                k : { 'ip_address' : 'x.y.z', 'port-1' : v }
+                for k, v in services.items ()
+            }
+        },
+        "message" : "mock: testing..."
+    })
+    
+class ContextFactory:
+    """ Flexible method for connecting to a TychoContext.
+    Also, provide the null context for easy dev testing in appstore. """
+    @staticmethod
+    def get (product, context_type="null"):
+        return {
+            "null" : NullContext (),
+            "live" : TychoContext (product=product)
+        }[context_type]
+    
+            
+        

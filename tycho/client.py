@@ -136,20 +136,6 @@ class TychoClient:
         """
         return self.request ("delete", request)
     
-    def status0 (self, request):
-        """ Get status of running systems.
-        
-            Get the status of a system by GUID or across systems.
-
-            The format of a request is::
- 
-                {}
-
-            :param request: Request formatted as above.
-            :type request: JSON
-        """
-        return self.request ("status", request)
-    
     def status (self, request):
         """ Get status of running systems.
         
