@@ -46,6 +46,7 @@ contexts:
         spec: ${catalyst_apps}/cloudtop/docker-compose.yaml
         icon: ${catalyst_apps}/cloudtop/icon.png
         descripton: CloudTop is a cloud native, browser accessible Linux desktop.
+        details: It presents an Ubuntu graphical desktop environment with zero install.
         docs: https://helxplatform.github.io/cloudtop-docs/
         services:
           cloudtop : 8080
@@ -53,7 +54,8 @@ contexts:
         name: Jupyter Data Science
         spec: ${catalyst_apps}/jupyter-ds/docker-compose.yaml
         icon: ${catalyst_apps}/jupyter-ds/icon.png
-        descripton: A Jupyter data science notebook.
+        descripton: Jupyter DataScience: A Jupyter notebook for exploring and visualizing data.
+        details: Includes R, Julia, and Python.
         docs: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-datascience-notebook
         services:
           jupyter-datascience : 8888
@@ -62,6 +64,7 @@ contexts:
         spec: ${catalyst_apps}/rstudio-server/docker-compose.yaml
         icon: ${catalyst_apps}/rstudio-server/icon.png
         descripton: R Studio Server is a web based notebook environment for R development.
+        details: Provides notebook computing experience with the R Studio development environment.
         docs: https://rstudio.com/products/rstudio/
         services:
           rstudio-server : 8787
@@ -74,7 +77,8 @@ contexts:
         name: ImageJ Viewer
         spec: ${catalyst_apps}/imagej/docker-compose.yaml
         icon: ${catalyst_apps}/imagej/icon.png
-        descripton: ImageJ is a public domain Java image processing program inspired by NIH Image for the Macintosh.
+        descripton: ImageJ/Napari: Imagej is an image processor developed at NIH/LOCI.
+        details: Napari enables multi-dimensional image viewing, annotation and analysis.
         docs: https://imagej.nih.gov/ij/
         services:
           imagej: 8080
@@ -83,9 +87,8 @@ contexts:
         name: Napari Image Viewer
         spec: ${catalyst_apps}/imagej/docker-compose.yaml
         icon: ${catalyst_apps}/imagej/icon.png
-        descripton: >
-          Napari is a fast, interactive, multi-dimensional image viewer for browsing,
-          annotating, and analyzing large multi-dimensional images.
+        descripton: Napari is a fast, interactive, multi-dimensional image viewer.
+        details: It enables browsing, annotating, and analyzing large multi-dimensional images.
         docs: https://napari.org/
         services:
           napari : 8080            
@@ -99,6 +102,7 @@ contexts:
         spec: ${catalyst_apps}/dicom-cloudtop/docker-compose.yaml
         icon: ${catalyst_apps}/dicom-cloudtop/icon.png
         descripton: OHIF is a framework for building medical imaging web applications.
+        details: Uses the OrthaNC DICOM service for indexing image data.
         docs: https://ohif.org/
         services:
           cloudtop : 8080
@@ -108,6 +112,7 @@ contexts:
         spec: ${catalyst_apps}/helx-autoencoder/docker-compose.yaml
         icon: ${catalyst_apps}/helx-autoencoder/icon.png
         descripton: ___________________________________________________
+        details: ___________________________________________________
         docs: http://we.need.autoencoder.docs/doc.html # TODO: need these
         services:
           jupyter : 8888          
@@ -116,6 +121,7 @@ contexts:
         spec: ${catalyst_apps}/hail/docker-compose.yaml
         icon: ${catalyst_apps}/hail/icon.png
         description: A notebook computing interface to a large single node Hail genomics workspace.
+        details: Insantiates Apache Spark on a single cloud node for small to medium scale exploration.
         docs: https://github.com/helxplatform/helx-hail # TODO: Make proper docs.
         services:
           jupyter : 8888
@@ -128,7 +134,8 @@ contexts:
         name: Nextflow API
         spec: ${catalyst_apps}/nextflow/docker-compose.yaml
         icon: ${catalyst_apps}/nextflow/icon.png
-        descripton: A cloud native workspace for executing Nextflow workflows.
+        descripton: Nextflow: A scalable workflow computational pipeline workspace.
+        details: Orchestrate Docker containers into reproducible workflows.
         docs: https://github.com/SciDAS/nextflow-api
         services:
           nextflow : 8080
@@ -138,8 +145,8 @@ contexts:
         icon: ${catalyst_apps}/gsforge/icon.png
         descripton: >
           GSForge is a Python package that assists researchers in the selection of gene sets with
-          potential association to an experimental condition or phenotypic trait, which offers new
-          potential hypotheses for gene-trait causality.
+          potential association to an experimental condition or phenotypic trait.
+        details: Offers new potential hypotheses for gene-trait causality.
         docs: https://systemsgenetics.github.io/GSForge/
         services:
           jupyter : 8888
@@ -153,6 +160,7 @@ contexts:
         spec: ${catalyst_apps}/blackbalsam/docker-compose.yaml
         icon: ${catalyst_apps}/blackbalsam/icon.png
         descripton: Blackbalsam is a notebook AI, visualization, and parallel computing environment.
+        details: Provides AI(Tensorflow,PyTorch) Vis(Plotly,Bokeh,Seaborn) Compute(Apache Spark) and Minio S3 interfaces.
         docs: https://github.com/stevencox/blackbalsam
         services:
           jupyter : 8888
