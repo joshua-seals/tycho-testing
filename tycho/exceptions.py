@@ -6,6 +6,9 @@ class TychoException(Exception):
 class StartException(Exception):
     def __init__(self, message, details=""):
         super().__init__(message, details)
+class StatusException(Exception):
+    def __init__(self, message, details=""):
+        super().__init__(message, details)
 class DeleteException(Exception):
     def __init__(self, message, details=""):
         super().__init__(message, details)

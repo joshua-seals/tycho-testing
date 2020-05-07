@@ -31,10 +31,11 @@ class TychoContext:
     
     """ https://github.com/heliumdatacommons/CommonsShare_AppStore/blob/master/CS_AppsStore/cloudtop_imagej/deployment.py """
     def __init__(self, registry_config="app-registry.yaml", product="common"):
+        logger.debug (f"-- loading app registry for product {product}")
         self.registry = self._get_registry (registry_config, product=product)
         """ Uncomment this and related lines when this code goes live,. 
         Use a timeout on the API so the unit tests are not slowed down. """
-        #self.client = TychoClientFactory().get_client()
+        self.client = TychoClientFactory().get_client()
         self.product = product
         self.apps = self._grok ()
         self.http_session = CachedSession (cache_name='tycho-registry')
@@ -75,19 +76,19 @@ class TychoContext:
             new_apps = contexts[base_name].get ('apps', {})
             new_apps.update (apps)
             apps = new_apps
-
+        
         """ Load the repository map to enable string interpolation. """
         repository_map = {
             key : value['url']
             for key, value in self.registry.get ('repositories', {}).items ()
         }
-        """ Compile URLs to resolve repository variables. """
+        """ Compile URLs to resolve repository variables. """ 
         for name, app in context.get('apps',{}).items ():
             if not 'spec' in app:
                 repos = list(repository_map.items())
-                if len(repos) == 0:
+                if len(repos) == 0: 
                     raise ValueError ("No spec URL and no repositories specified.")
-                repo_url = repos[0][0]
+                repo_url = repos[0][1]
                 app['spec'] = f"{repo_url}/{name}/docker-compose.yaml"
             spec_url = app['spec']
             app['icon'] = os.path.join (os.path.dirname (spec_url), "icon.png")
@@ -138,7 +139,10 @@ class TychoContext:
                 env = ""
             self.apps[app_id]['env_obj'] = env
         return env
-
+    def status (self, request=None):
+        return self.client.status (request)
+    def delete (self, request=None):
+        return self.client.delete (request)
     def start (self, principal, app_id):
         """ Get application metadata, docker-compose structure, settings, and compose API request. """
         spec = self.get_spec (app_id)
@@ -179,7 +183,9 @@ class NullContext (TychoContext):
     A null context to facilitate client development.
     """
     def __init__(self, registry_config="app-registry.yaml", product="common"):
-        super ().__init__()
+        logger.debug (f"null context: {registry_config} {product}")
+        super ().__init__(registry_config=registry_config,
+                          product=product)
     def status (self, request=None):
         """ Make up some rows. """
         return TychoStatus (**{
@@ -224,7 +230,7 @@ class ContextFactory:
     @staticmethod
     def get (product, context_type="null"):
         return {
-            "null" : NullContext (),
+            "null" : NullContext (product=product),
             "live" : TychoContext (product=product)
         }[context_type]
     
