@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/heliumplusdatastage/tycho.svg?branch=development)](https://travis-ci.org/heliumplusdatastage/tycho)
 
 Tycho is an API, compiler, and executor for cloud native distributed systems.
-
+  
 * A subset of [docker-compose](https://docs.docker.com/compose/) is the system specification syntax.
 * [Kubernetes](https://kubernetes.io/) is the first supported orchestrator.
 
