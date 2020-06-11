@@ -1,6 +1,6 @@
 #/bin/bash
 
-set -e
+set -xe
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TYCHO_ROOT=$( dirname $DIR )
@@ -21,6 +21,7 @@ for cycle in $(seq 1 $max_cycles); do
         failed=0
         break
     else
+        failed=1
         sleep 5
     fi
 done
@@ -30,7 +31,7 @@ if [ "$failed" -eq 1 ]; then
 fi
 
 # Deploy instances.
-cd $TYCHO_ROOT/tycho
+cd $TYCHO_ROOT/bin
 
 instances=1
 test_tag=nginx
