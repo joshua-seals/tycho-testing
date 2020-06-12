@@ -105,6 +105,6 @@ $DIR/tycho down $($DIR/tycho status --terse)
 
 # Show status.
 echo --status...
-$DIRtycho status
+$DIR/tycho status
 
 exit 0
