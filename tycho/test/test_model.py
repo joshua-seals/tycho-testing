@@ -9,10 +9,11 @@ def test_system_model (request):
     where they belong. """
     print (f"{request.node.name}")
     system = System (**{
-        "config"     : Config (),
-        "name"       : "test",
-        "username"   : "renci",
-        "containers" : [
+        "config"         : Config (),
+        "name"           : "test",
+        "username"       : "renci",
+        "serviceaccount" : "default",
+        "containers"     : [
             {
                 "name"  : "nginx-container",
                 "image" : "nginx:1.9.1",
