@@ -6,7 +6,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TYCHO_ROOT=$( dirname $DIR )
 
 echo $DIR
-echo TYCHO_ROOT
+echo $TYCHO_ROOT
 
 
 # cycles to wait for services.
@@ -46,20 +46,20 @@ test_tag=nginx
 echo --launching $instances instances
 for i in $(seq 0 $(($instances-1))); do
     #tycho up -f sample/jupyter-ds/docker-compose.yaml
-    tycho up -a nginx
+    $DIR/tycho up -a nginx
     #kubectl get svc | grep jupyter
     kubectl get svc | grep $test_tag
 done
 
 # Show status
 echo --status...
-tycho status
+$DIR/tycho status
 
 # Test connectivity to each instance
 hits=0
 minikube_ip=$(minikube ip)
 echo --testing $instances instances at $minikube_ip ...
-for p in $(tycho status | grep $test_tag | grep -v PORT | awk '{ print $4 }'); do
+for p in $($DIR/tycho status | grep $test_tag | grep -v PORT | awk '{ print $4 }'); do
     failed=1
     for cycle in $(seq 1 $max_cycles); do
         echo --testing http://$minikube_ip:$p cycle: $cycle
@@ -80,7 +80,7 @@ for p in $(tycho status | grep $test_tag | grep -v PORT | awk '{ print $4 }'); d
         echo $hits instances are taking traffic.
         echo --failed getting http://$minikube_ip:$p after $max_cycles attempts
         echo --taking down instances.
-        tycho down $(tycho status --terse)
+        $DIR/tycho down $($DIR/tycho status --terse)
         exit 1
     fi
 done
@@ -91,20 +91,20 @@ if [ "$hits" -eq "$instances" ]; then
 else
     echo --only $hits instances of $instances are taking traffic
     echo --taking instances down
-    tycho down $(tycho status --terse)
+    $DIR/tycho down $($DIR/tycho status --terse)
     exit 1
 fi
 
 # Show intances.
 echo --status...
-tycho status
+$DIR/tycho status
 
 # Delete instances.
 echo --taking instances down
-tycho down $(tycho status --terse)
+$DIR/tycho down $($DIR/tycho status --terse)
 
 # Show status.
 echo --status...
-tycho status
+$DIRtycho status
 
 exit 0
