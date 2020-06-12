@@ -1,9 +1,13 @@
 #/bin/bash
 
-set -xe
+set +xe
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 TYCHO_ROOT=$( dirname $DIR )
+
+echo $DIR
+echo TYCHO_ROOT
+
 
 # cycles to wait for services.
 max_cycles=300
@@ -32,6 +36,10 @@ fi
 
 # Deploy instances.
 cd $TYCHO_ROOT/bin
+
+echo "Changed directory to: " `pwd`
+
+ls -l
 
 instances=1
 test_tag=nginx
