@@ -14,49 +14,44 @@ from unittest import mock
 
 from tycho.actions import StartSystemResource
 from tycho.actions import TychoResource
+from tycho.actions import DeleteSystemResource
+from tycho.actions import StatusSystemResource
 
 logger = logging.getLogger (__name__)
 
 def test_start_system_resource(mocker, system_request, client, request):
     print (f"{request.node.name}")
     response = {
-        "status": "success",
-        "result": {
-            "name": "jupyter-ds-caa94baea8a849d89e427bd78cad17eb",
-            "sid": "caa94baea8a849d89e427bd78cad17eb",
-        },
-        "message": "Started system jupyter-ds-caa94baea8a849d89e427bd78cad17eb"
+        "status": "success"
     }
 
     # Making a system request, storing in tycho_system
     tycho_system = StartSystemResource().post(system_request)
-
-    result = response["result"]
     
     assert tycho_system['status'] == response['status']
-    assert tycho_system['name'] == result['name']
-    assert tycho_system['sid'] == result['sid']
-    assert tycho_system['message'] == response['message']
+    assert tycho_system['message'].startswith("Started system")
 
 def test_delete_system_resource(mocker, system_request, client, request):
     print(f"{request.node.name}")
-    # response = {
-    #     "status": "success",
-    #     "result": {
-    #         #result
-    #     }
-    #     "message": "Deleted system ..."
-    # }
+    response = {
+        "status": "success"
+    }
 
-    # tycho_delete = DeleteSystemResource().post(system_request)
+    tycho_delete = DeleteSystemResource().post(system_request)
+    print(tycho_delete)
 
-    # result = response['result']
-
-    # assert tycho_delete['status'] == response['status']
-    # assert tycho_delete['name'] == result['name']
-    # assert tycho_delete['sid'] == result['sid']
-    # assert tycho_delete['message'] == response['message']
+    assert tycho_delete['status'] == response['status']
+    assert tycho_delete['message'].startswith("Deleted")
 
 
 def test_status_system_resource(mocker, system_request, client, request):
     print(f"{request.node.name}")
+    response = {
+        "status": "success"
+    }
+
+    tycho_status = StatusSystemResource().post(system_request)
+    print(tycho_status)
+
+    assert tycho_status['status'] == response['status']
+    assert tycho_status['message'].startswith("Get status")
