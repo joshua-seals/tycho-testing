@@ -111,6 +111,7 @@ class KubernetesCompute(Compute):
         """
         namespace = self.namespace #system.get_namespace()
         try:
+            logger.debug(f"system = {system}")
             """ Check volumes and remove them from the system. """
             volumesNA = self.check_volumes(system.volumes, namespace)
             systemVolumesCopy = []

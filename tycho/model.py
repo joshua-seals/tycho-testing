@@ -6,9 +6,43 @@ import os
 import uuid
 import yaml
 import traceback
+import enum
 from tycho.tycho_utils import TemplateUtils
 
 logger = logging.getLogger (__name__)
+
+class ProbeType(enum.Enum):
+    Liveness = 1
+    Readiness = 2
+
+
+class Probe:
+    def __init__(self,type=ProbeType.Liveness,initial_delay=2,period=1):
+        self._initial_delay = initial_delay
+        self._period = period
+        self._type = type
+    
+    def initial_delay(self):
+        return self._initial_delay
+
+    def period(self):
+        return self._period
+
+    def type(self):
+        return self._type
+
+
+class HttpProbe(Probe):
+    def __init__(self,port=80,path="/",type=ProbeType.Liveness,initial_delay=2,period=1):
+        super()._init(type,initial_delay,period)
+        self._path = path
+        self._port = port
+    
+    def path(self):
+        return self._path
+    
+    def port(self):
+        return self._port
 
 
 class Limits:
@@ -75,7 +109,8 @@ class Container:
                  expose=[],
                  depends_on=None,
                  volumes=None,
-                 securityContext=None):
+                 securityContext=None,
+                 probe=None):
         """ Construct a container.
         
             :param name: Name the running container will be given.
@@ -95,12 +130,15 @@ class Container:
             :type volumes: list of str
             :param securityContext: Contains container security context, runAsUser and fsGroup
             :type securityContext: dict
+            :param probe: RedinessProbe Def
+            :type probe: dict
         """
         self.name = name
         self.image = image
         self.identity = identity
         self.limits = Limits(**limits) if isinstance(limits, dict) else limits
         self.requests = Limits(**requests) if isinstance(requests, dict) else requests
+        self.probe = HttpProbe(**probe) if isinstance(probe, dict) else probe
         if isinstance(self.limits, list):
             self.limits = self.limits[0] # TODO - not sure why this is a list.
         self.ports = ports
@@ -141,9 +179,7 @@ class System:
         containers_exist = len(containers) > 0
         none_are_null = not any([ c for c in containers if c == None ])
         assert containers_exist and none_are_null, "System container elements may not be null."
-        self.containers = list(map(lambda v : Container(**v), containers)) \
-                          if isinstance(containers[0], dict) else \
-                             containers
+        self.containers = list(map(lambda v : Container(**v), containers)) if isinstance(containers[0], dict) else containers
         """ Construct a map of services. """
         self.services = {
             service_name : Service(**service_def)
@@ -288,6 +324,7 @@ class System:
                 "expose"  : expose,
                 "depends_on": spec.get("depends_on", []),
                 "volumes"  : [ v for v in spec.get("volumes", []) ],
+                "probe": spec.get('probe',{}),
                 "securityContext" :  spec.get("securityContext", {})
             })
         system_specification = {
