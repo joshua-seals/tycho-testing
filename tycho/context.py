@@ -104,7 +104,7 @@ class TychoContext:
                     raise ValueError ("No spec URL and no repositories specified.")
                 repo_url = repos[0][1]
                 dockstore_branch = os.environ.get("DOCKSTORE_APPS_BRANCH", "master")
-                if dockstore_branch == "develop":
+                if dockstore_branch != "master":
                     repo_url = repo_url.replace("master", dockstore_branch)
                 app['spec'] = f"{repo_url}/{name}/docker-compose.yaml"
             spec_url = app['spec']
