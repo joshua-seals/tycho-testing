@@ -251,14 +251,6 @@ contexts:
         services:
           kstars: 8080
         count: 1
-      cloud-top:
-        name: Cloud Top
-        description: CloudTop is a cloud native, browser accessible Linux desktop.
-        details: A Ubuntu graphical desktop environment for experimenting with native applications in the cloud.
-        docs: https://helxplatform.github.io/cloudtop-docs/
-        services:
-          cloud-top: 8080
-        count: 1
   eduhelx:
     name: UNC Helx for Education
     apps:
