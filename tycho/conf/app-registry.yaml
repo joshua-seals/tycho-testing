@@ -251,14 +251,6 @@ contexts:
         services:
           kstars: 8080
         count: 1
-      lightcurve:
-        name: Lightcurve Server
-        description: Evryscope Lightcurve Data Server
-        details: Tens of thousands of epochs of photometric measurements for all stars brighter than g=15.
-        docs: https://evryscope.astro.unc.edu/
-        services:
-          lightcurve: 8080
-        count: 1
   eduhelx:
     name: UNC Helx for Education
     apps:
