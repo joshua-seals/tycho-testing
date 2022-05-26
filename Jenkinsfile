@@ -1,38 +1,70 @@
 pipeline {
     agent {
         kubernetes {
-            cloud 'kubernetes'
-            label 'agent-docker'
-            defaultContainer 'agent-docker'
+            yaml """
+kind: Pod
+metadata:
+  name: kaniko
+spec:
+  containers:
+  - name: jnlp
+    workingDir: /home/jenkins/agent
+  - name: kaniko
+    workingDir: /home/jenkins/agent
+    image: gcr.io/kaniko-project/executor:debug
+    imagePullPolicy: Always
+    resources:
+      requests:
+        cpu: "500m"
+        memory: "1024Mi"
+        ephemeral-storage: "768Mi"
+      limits:
+        cpu: "1000m"
+        memory: "1024Mi"
+        ephemeral-storage: "1024Mi"
+    command:
+    - /busybox/cat
+    tty: true
+    volumeMounts:
+    - name: jenkins-docker-cfg
+      mountPath: /kaniko/.docker
+  volumes:
+  - name: jenkins-docker-cfg
+    projected:
+      sources:
+      - secret:
+          name: rencibuild-imagepull-secret
+          items:
+            - key: .dockerconfigjson
+              path: config.json
+"""
         }
     }
     stages {
-        stage('Install') {
-            steps {
-                sh '''
-                make install
-                '''
-            }
-        }
-        stage('Test') {
-            steps {
-                sh '''
-                make test
-                '''
-            }
-        }
-        stage('Publish') {
-            when {
-                buildingTag()
-            }
+        // stage('Test') {
+        //     steps {
+        //         container('kaniko-build-agent') {
+        //             sh '''
+        //             /usr/bin/env python3 -m pytest tests
+        //             '''
+        //         }
+        //     }
+        // }
+        stage('Build and Push') {
             environment {
-                DOCKERHUB_CREDS = credentials('rencibuild_dockerhub_machine_user')
+                PATH = "/busybox:/kaniko:$PATH"
+                DOCKERHUB_CREDS = credentials("${env.REGISTRY_CREDS_ID_STR}")
+                DOCKER_REGISTRY = "${env.DOCKER_REGISTRY}"
+                BUILD_NUMBER = "${env.BUILD_NUMBER}"
             }
             steps {
-                sh '''
-                echo $DOCKERHUB_CREDS_PSW | docker login -u $DOCKERHUB_CREDS_USR --password-stdin
-                make publish
-                '''
+                container(name: 'kaniko', shell: '/busybox/sh') {
+                    sh '''
+                    /kaniko/executor --dockerfile Dockerfile \
+                        --context . \
+                        --destination helxplatform/tycho-api:develop-v.0.0.91-$BUILD_NUMBER
+                    '''
+                }
             }
         }
     }

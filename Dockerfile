@@ -17,7 +17,11 @@ RUN mkdir app
 COPY --chown=$USER . app/
 WORKDIR $HOME/app
 
-RUN make install
+RUN /usr/bin/env python3 -m pip install --upgrade pip && \
+	/usr/bin/env python3 -m pip install --upgrade wheel && \
+	/usr/bin/env python3 -m pip install --upgrade setuptools && \
+	/usr/bin/env python3 -m pip install -r requirements.txt && \
+	/usr/bin/env python3 -m pip install .
 
 ENV WORKERS=2
 ENV APP_MODULE=tycho.api:app
