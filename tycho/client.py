@@ -26,7 +26,6 @@ mem_converter = {
 }
 
 
-
 class TychoService:
     """ Represent a service endpoint. """
     try_minikube = True
@@ -114,39 +113,39 @@ class TychoClient:
             'modify': ModifySystemResource()
         }
         
-    def request (self, service, request):
+    def request(self, service, request):
         """ Send a request to the server. Generic underlayer to all requests. 
 
             :param service: URL path to the service to invoke.
             :param request: JSON to send to the API endpoint.
         """
         if os.environ.get("REST_API", "false") == "true":
-            response = requests.post (f"{self.url}/{service}", json=request)
+            response = requests.post(f"{self.url}/{service}", json=request)
             result_text = f"HTTP status {response.status_code} received from service: {service}"
-            logger.debug (result_text)
+            logger.debug(result_text)
             if not response.status_code == 200:
-                raise Exception (f"Error: {result_text}")
-            result = response.json ()
+                raise Exception(f"Error: {result_text}")
+            result = response.json()
             logger.debug (json.dumps(result, indent=2))
         else:
             result = self.actions.get(service).post(request)
             logger.debug(f"{result} received from service: {service}")
         return result
     
-    def format_name (self, name):
+    def format_name(self, name):
         """ Format a service name to be a valid DNS label.
         
             :param name: Format a name.
         """
-        return name.replace (os.sep, '-')
+        return name.replace(os.sep, '-')
 
-    def parse_env (self, environment):
+    def parse_env(self, environment):
         return {
-            line.split("=", maxsplit=1)[0] : line.split("=", maxsplit=1)[1]
-            for line in environment.split ("\n") if '=' in line
+            line.split("=", maxsplit=1)[0]: line.split("=", maxsplit=1)[1]
+            for line in environment.split("\n") if '=' in line
         }
         
-    def start (self, request):
+    def start(self, request):
         """ Start a service. 
         
             The general format of a start request is::
@@ -161,14 +160,14 @@ class TychoClient:
             :type request: JSON
             :returns: Returns a TychoSystem object
         """
-        response = self.request ("start", request)
-        error = response.get('result',{}).get('error',None)
+        response = self.request("start", request)
+        error = response.get('result', {}).get('error', None)
         if error == 'error':
             for e in error:
-                logger.error (e)
-        return TychoSystem (**response)
+                logger.error(e)
+        return TychoSystem(**response)
 
-    def delete (self, request):
+    def delete(self, request):
         """ Delete a service. 
             
             Given the GUID of a running service, delete it and all its constituent parts.
@@ -182,11 +181,11 @@ class TychoClient:
             :param request: A request formatted as above.
             :type request: JSON
         """
-        logger.error (f"-- delete: {json.dumps(request, indent=2)}")
-        print (f"-- delete: {json.dumps(request, indent=2)}")
-        return self.request ("delete", request)
+        logger.error(f"-- delete: {json.dumps(request, indent=2)}")
+        print(f"-- delete: {json.dumps(request, indent=2)}")
+        return self.request("delete", request)
     
-    def status (self, request): 
+    def status(self, request):
         """ Get status of running systems.
         
             Get the status of a system by GUID or across systems.
@@ -198,8 +197,8 @@ class TychoClient:
             :param request: Request formatted as above.
             :type request: JSON
         """
-        response = self.request ("status", request)
-        return TychoStatus (**response)
+        response = self.request("status", request)
+        return TychoStatus(**response)
 
     def modify(self, request):
         """ Takes in a JSON formatted metadata and specs of a running system.
@@ -218,56 +217,55 @@ class TychoClient:
         response = self.request("modify", request)
         return response
 
-    def up (self, name, system, settings=""):
-        """ Bring a service up starting with a docker-compose spec. 
+    def up(self, name, system, settings=""):
+        """ Bring a service upstarting with a docker-compose spec.
         
             CLI endpoint to start a service on the Tycho compute fabric.::
 
                 tycho up -f path/to/docker-compose.yaml
 
             :param name: Name of the system.
-            :type name: str
+            type name: str
             :param system: Docker-compose JSON structure.
             :type system: JSON
             :param settings: The textual contents of a .env file.
-            :type settings: str
+            type settings: str
         """
         services = {}
-        for container_name, container in system['services'].items ():
+        for container_name, container in system['services'].items():
             if 'ports' in container.keys():
                 ports = container['ports']
                 for port in ports:
                     port_num = int(port.split(':')[1] if ':' in port else port)
                     services[container_name] = {
-                        "port" : port_num
-                        #"clients" : [ "192.16.1.179" ]
+                        "port": port_num
                     }
                     
         request = {
-            "name"   : self.format_name (name),
-            "principal" : '{"username": "renci"}',
-            "serviceaccount" : "default",
-            "env"    : self.parse_env (settings),
-            "system" : system,
-            "services" : services
+            "name": self.format_name (name),
+            "principal": '{"username": "renci"}',
+            "serviceaccount": "default",
+            "env": self.parse_env (settings),
+            "system": system,
+            "services": services
         }
-        logger.debug (f"request: {json.dumps(request, indent=2)}")
-        response = self.start (request)
-        logger.debug (response)
+        logger.debug(f"request: {json.dumps(request, indent=2)}")
+        response = self.start(request)
+        logger.debug(response)
         if response.status == 'error':
-            print (response.message)
+            print(response.message)
         else:
             format_string = '{:<30} {:<35} {:<15} {:<7}'
-            print (format_string.format("SERVICE", "GUID", "IP_ADDRESS", "PORT"))
+            print(format_string.format("SERVICE", "GUID", "IP_ADDRESS", "PORT"))
             for service in response.services:
-                print (format_string.format (
-                    TemplateUtils.trunc (service.name, max_len=28),
-                    TemplateUtils.trunc (response.identifier, max_len=33),
+                print(format_string.format(
+                    TemplateUtils.trunc(service.name, max_len=28),
+                    TemplateUtils.trunc(response.identifier, max_len=33),
                     service.ip_address,
                     service.port))
                 break
 
-    def list (self, name, terse=False):
+    def list(self, name, terse=False):
         """ List status of executing systems.
 
             CLI endpoint to list status of services.::
@@ -281,32 +279,32 @@ class TychoClient:
             :type terse: boolean
         """
         try:
-            request = { "name" : self.format_name (name) } if name else {}
+            request = {"name": self.format_name(name)} if name else {}
             request['username'] = 'renci'
-            response = self.status (request)
-            logger.debug (response)
-            if response.status  == 'success':
+            response = self.status(request)
+            logger.debug(response)
+            if response.status == 'success':
                 if terse:
                     for service in response.services:
-                        print (service.identifier)
+                        print(service.identifier)
                 elif len(response.services) == 0:
-                    print ('None running')
+                    print('None running')
                 else:
                     format_string = '{:<30} {:<35} {:<15} {:<7} {:<1}'
-                    print (format_string.format("SYSTEM", "GUID", "IP_ADDRESS", "PORT", "CREATION_TIME"))
+                    print(format_string.format("SYSTEM", "GUID", "IP_ADDRESS", "PORT", "CREATION_TIME"))
                     for service in response.services:
-                        print (format_string.format (
-                            TemplateUtils.trunc (service.name, max_len=28),
-                            TemplateUtils.trunc (service.identifier, max_len=33),
+                        print(format_string.format(
+                            TemplateUtils.trunc(service.name, max_len=28),
+                            TemplateUtils.trunc(service.identifier, max_len=33),
                             service.ip_address,
                             service.port,
                             service.creation_time))
             elif response.status == 'error':
-                print (response)
+                print(response)
         except Exception as e:
             raise e
         
-    def down (self, names):
+    def down(self, names):
         """ Bring down a service. 
 
             CLI endpoint for deleting running systems.::
@@ -318,14 +316,14 @@ class TychoClient:
         """
         try:
             for name in names:
-                response = self.delete ({ "name" : self.format_name(name) })
-                logger.debug (json.dumps(response,indent=2))
-                if response.get('status',None) == 'success':
-                    print (f"{name}")
+                response = self.delete({"name": self.format_name(name)})
+                logger.debug(json.dumps(response, indent=2))
+                if response.get('status', None) == 'success':
+                    print(f"{name}")
                 else:
-                    print (json.dumps (response, indent=2))
+                    print(json.dumps(response, indent=2))
         except Exception as e:
-            traceback.print_exc (e)
+            traceback.print_exc(e)
 
     def patch(self, mod_items):
         """
@@ -370,15 +368,15 @@ class TychoClientFactory:
             Then create the K8S API endpoint.
         """
         if os.getenv('KUBERNETES_SERVICE_HOST'):
-            logger.debug ("--loading in cluster configuration.")
+            logger.debug("--loading in cluster configuration.")
             k8s_config.load_incluster_config()
         else:
-            logger.debug ("--loading kube config, cluster external.")
+            logger.debug("--loading kube config, cluster external.")
             k8s_config.load_kube_config()
         api_client = k8s_client.ApiClient()
         self.api = k8s_client.CoreV1Api(api_client)
         
-    def get_client (self, name="tycho-api", namespace="default", default_url="http://localhost:5000"):
+    def get_client(self, name="tycho-api", namespace="default", default_url="http://localhost:5000"):
         """ Locate the client endpoint using the K8s API.
 
             Locate the Tycho API using the K8S API. We do this by reading services in the
@@ -410,29 +408,27 @@ class TychoClientFactory:
             elif service.status and service.status.load_balancer:
                 ip_address = "tycho-api"
                 port = service.spec.ports[0].port
-                logger.debug (f"located tycho api instance in kube")
+                logger.debug(f"located tycho api instance in kube")
                 url = f"http://{ip_address}:{port}"
             elif service.spec and len(service.spec.ports) > 0:
-                logger.debug ("--looking in minikube for a node port based service.")
-                ip = os.popen('minikube ip').read().strip ()
+                logger.debug("--looking in minikube for a node port based service.")
+                ip = os.popen('minikube ip').read().strip()
                 if len(ip) > 0:
                     try:
                         ipaddress.ip_address (ip)
-                        logger.info (f"configuring minikube ip: {ip}")
+                        logger.info(f"configuring minikube ip: {ip}")
                         port = service.spec.ports[0].node_port
-                        logger.debug (f"located tycho api instance in minikube")
+                        logger.debug(f"located tycho api instance in minikube")
                         url = f"http://{ip}:{port}"
                     except ValueError as e:
-                        logger.error ("unable to get minikube ip address")
-                        traceback.print_exc (e)
-            print(f"URL: {url}")
+                        logger.error("unable to get minikube ip address")
+                        traceback.print_exc(e)
         except Exception as e:
             url = default_url
-            print(f"url: {url}")
-            logger.info (f"cannot find {name} in namespace {namespace}")
+            logger.info(f"cannot find {name} in namespace {namespace}")
 
-        logger.info (f"creating tycho client with url: {url}")
-        return TychoClient (url=url)
+        logger.info(f"creating tycho client with url: {url}")
+        return TychoClient(url=url)
 
 
 class TychoApps:
@@ -445,10 +441,10 @@ class TychoApps:
         self.env = '.env'
         self.metadata = {}
 
-    def deleterepo(self, repo_path):
+    def delete_repo(self, repo_path):
         shutil.rmtree(repo_path)
 
-    def getmetadata(self):
+    def get_metadata(self):
         base_dir = os.path.dirname(os.path.abspath(__file__))
         try:
             git.Git(base_dir).clone(self.repo_url)
@@ -468,16 +464,17 @@ class TychoApps:
                         settings = stream.read()
                         self.metadata['Settings'] = settings
             break
-        self.deleterepo(repo_path)
+        self.delete_repo(repo_path)
         return self.metadata
 
 
 if __name__ == "__main__":
     """ A CLI for Tycho. """
-    status_command="@status_command"
+    status_command = "@status_command"
     parser = argparse.ArgumentParser(description='Tycho Client')
     parser.add_argument('-u', '--up', help="Launch service.", action='store_true')
-    parser.add_argument('-s', '--status', help="Get status of running systems.", nargs='?', const=status_command, default=None)
+    parser.add_argument('-s', '--status', help="Get status of running systems.", nargs='?', const=status_command,
+                        default=None)
     parser.add_argument('-d', '--down', help="Delete a running system. Requires a system id.", nargs='*')
     parser.add_argument('-p', '--port', type=int, help="Port to expose.")
     parser.add_argument('-c', '--container', help="Container to run.")
@@ -487,62 +484,60 @@ if __name__ == "__main__":
     parser.add_argument('--command', help="Container command", default=None)
     parser.add_argument('--settings', help="Environment settings", default=None)
     parser.add_argument('-f', '--file', help="A docker compose (subset) formatted system spec.")
-    parser.add_argument('-a', '--app', help="Name of the app. Should be one of the apps available in app-support-prototype repo")
+    parser.add_argument('-a', '--app', help="Name of the app. Should be one of the apps available in "
+                                            "app-support-prototype repo")
     parser.add_argument('-t', '--trace', help="Trace (debug) logging", action='store_true', default=False)
     parser.add_argument('--terse', help="Keep status short", action='store_true', default=False)
     parser.add_argument('-v', '--volumes', help="Mounts a volume", default=None)
     parser.add_argument('-m', '--modify', help="Modify a running system", default=None)
-    args = parser.parse_args ()
+
+    args = parser.parse_args()
                 
     """ Honor debug and trace settings. """
     if args.trace:
         logging.basicConfig(level=logging.DEBUG)
 
     """ Resolve environment settings file as text. """
-    settings=""
+    settings = ""
     if args.settings:
         with open(args.settings, "r") as stream:
-            settings = stream.read ()
+            settings = stream.read()
 
-    name=args.name
-    system=None
+    """ Set the name and the system (defined as a docker-compose) based on the CLI arguments """
+    name = args.name
+    system = None
     if args.app:
-        """Name for the app"""
+        # Name for the app
         name = args.app
-
-        """ Apply settings. """
-        tychoapps = TychoApps(args.app)
-        metadata = tychoapps.getmetadata()
-
+        # Apply settings
+        tycho_apps = TychoApps(args.app)
+        metadata = tycho_apps.get_metadata()
         if 'System' in metadata.keys():
             system = metadata['System']
         if 'Settings' in metadata.keys():
             settings = metadata['Settings']
             print(f"settings: {settings}")
-
     elif args.file:
         if not args.name:
-            """ We've been given a docker-compose.yaml. Come up with a name for the app 
-            based on the containing directory if none has been otherwise supplied. """
+            # We've been given a docker-compose.yaml. Come up with a name for the app
+            # based on the containing directory if none has been otherwise supplied.
             if os.sep in args.file:
-                args.file = os.path.abspath (args.file)
+                args.file = os.path.abspath(args.file)
                 name = args.file.split('.')[0] if '.' in args.file else args.file
-                name = name.split (os.sep)[-2]
+                name = name.split(os.sep)[-2]
             else:
-                name = os.path.basename (os.getcwd ())
-
-        """ Apply settings. """
-        env_file = os.path.join (os.path.dirname (args.file), ".env")
-        if os.path.exists (env_file):
-            with open (env_file, 'r') as stream:
-                settings = stream.read ()
-                
+                name = os.path.basename(os.getcwd())
+        # Apply settings
+        env_file = os.path.join(os.path.dirname(args.file), ".env")
+        if os.path.exists(env_file):
+            with open(env_file, 'r') as stream:
+                settings = stream.read()
         with open(args.file, "r") as stream:
-            system = yaml.load (stream.read ())
+            system = yaml.load(stream.read())
     else:
-        """ Generate a docker-compose spec based on the CLI args. """
+        # Generate a docker-compose spec based on the CLI args
         name = args.name
-        template_utils = TemplateUtils (config=Config())
+        template_utils = TemplateUtils(config=Config())
         template = """
           version: "3"
           services:
@@ -559,33 +554,32 @@ if __name__ == "__main__":
               volumes:
                 - "{{args.volumes}}"
               {% endif %}"""
-
         system = template_utils.render_text(
-            TemplateUtils.apply_environment (settings, template),
-            context={ "args" : args })
+            TemplateUtils.apply_environment(settings, template),
+            context={"args": args})
 
-    client = None
     """ Locate the Tycho API endpoint. Instantiate a client to use the endpoint. """
-    if args.service == parser.get_default ("service"):
-        """ If the endpoint is the default value, try to discover the endpoint in kube. """
-        client_factory = TychoClientFactory ()
-        client = client_factory.get_client ()
+    client = None
+    if args.service == parser.get_default("service"):
+        # If the endpoint is the default value, try to discover the endpoint in kube
+        client_factory = TychoClientFactory()
+        client = client_factory.get_client()
         if not client:
-            """ That didn't work so use the default value. """
-            client = TychoClient (url=args.service)
+            # That didn't work so use the default value. """
+            client = TychoClient(url=args.service)
     if not client:
-        logger.info (f"creating client directly {args.service}")
-        client = TychoClient (url=args.service)
+        logger.info(f"creating client directly {args.service}")
+        client = TychoClient(url=args.service)
 
     if args.up:
-        client.up (name=name, system=system, settings=settings)
+        client.up(name=name, system=system, settings=settings)
     elif args.down:
-        client.down (names=args.down)
+        client.down(names=args.down)
     elif args.status:
         if args.status == status_command: # non arg
-            client.list (name=None, terse=args.terse)
+            client.list(name=None, terse=args.terse)
         else:
-            client.list (name=args.status, terse=args.terse)
+            client.list(name=args.status, terse=args.terse)
     elif args.modify:
         mod_items = json.loads(args.modify)
         client.patch(mod_items=mod_items)

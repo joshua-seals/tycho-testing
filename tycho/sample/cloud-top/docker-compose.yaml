@@ -4,10 +4,6 @@ services:
    cloud-top:
       image: helxplatform/cloudtop:latest
       container_name: cloud-top
-      environment:
-      volumes:
-         - pvc://cloud-top:/usr/local/renci/data
-         - pvc://cloud-top:/mounts
       entrypoint: ["bash", "-c", "/init"]
       ports: 
          - 8080:8080
@@ -31,8 +27,6 @@ services:
    viewer:
       image: ohif/viewer:v1.1.14.3708
       container_name: viewer
-      volumes:
-         - pvc://cloud-top:/mounts
       environment:
          - MONGO_URL=mongodb://mongo:27017/ohif
          - APP_CONFIG=/mounts/app-config.js
@@ -49,8 +43,6 @@ services:
       depends_on:
          - postgres
       entrypoint: ["bash", "-c", "sleep 5 && cp /mounts/orthanc.json /etc/orthanc/orthanc.json && Orthanc /etc/orthanc"]
-      volumes:
-         - pvc://cloud-top:/mounts
       expose:
          - "8042"
          - "4242"
@@ -62,16 +54,12 @@ services:
       container_name: mongo
       expose:
          - "27017"
-      volumes:
-        - pvc://cloud-top:/data/
 
    postgres:
       # uncommment next/remove following line once built in helxplatform
       # image: helxplatform/postgres:stage
       image: heliumdatastage/postgres:stage
       container_name: postgres
-      volumes:
-        - pvc://cloud-top:/var/lib/postgresql
       environment:
         - POSTGRES_DB=orthanc
         - POSTGRES_USER=postgres

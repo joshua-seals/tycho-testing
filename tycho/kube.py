@@ -212,10 +212,10 @@ class KubernetesCompute(Compute):
                 """ Determine if a service is configured for this container. """
                 service = system.services.get (container.name, None)
                 if service:
-                    logger.debug (f"generating service for container {container.name}")
-                    service_manifests = system.render (
-                        template = "service.yaml",
-                        context = { "service" : service, "create_deployment_api_response":create_deployment_api_response }
+                    logger.debug(f"generating service for container {container.name}")
+                    service_manifests = system.render(
+                        template="service.yaml",
+                        context={"service": service, "create_deployment_api_response": create_deployment_api_response}
                     )
                     for service_manifest in service_manifests:
                         logger.debug (f"-- creating service for container {container.name}")                        
@@ -308,7 +308,7 @@ class KubernetesCompute(Compute):
             :param namepsace: Namespace to run the pod in.
             :type namespace: str
         """
-        namespace = self.namespace #self.get_namespace()
+        namespace = self.namespace
 #        deployment_spec = k8s_client.ExtensionsV1beta1DeploymentSpec(
         deployment_spec = k8s_client.V1DeploymentSpec(
             replicas=1,

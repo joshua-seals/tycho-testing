@@ -271,16 +271,18 @@ class System:
         containers = []
         if env != None:
             env['identifier'] = identifier
-            env['username'] = principal.get('username',"Unknown")
+            env['username'] = principal.get('username', "Unknown")
             system_port = None
-            for cname,spec in system.get('services',{}).items():
+            for cname, spec in system.get('services', {}).items():
                  env['system_name'] = cname
                  for p in spec.get('ports', []):
                      if ':' in p: system_port = p.split(':')[1]
                      else: system_port = p
                      break
-            if system_port != None: env['system_port'] = system_port
-            else: env['system_port'] = 8000
+            if system_port != None:
+                env['system_port'] = system_port
+            else:
+                env['system_port'] = 8000
             logger.debug ("applying environment settings.")
             system_template = yaml.dump (system)
             logger.debug (json.dumps(env,indent=2))
