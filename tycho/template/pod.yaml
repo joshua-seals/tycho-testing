@@ -96,6 +96,8 @@ spec:
       value: /
     {% endif %}
 {% endif %}
+    - name: HOST
+      value: {{ system.host }}
 {% if not container.env %}
     - name : GUID
       value: {{ system.identifier }}

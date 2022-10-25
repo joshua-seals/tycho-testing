@@ -195,6 +195,7 @@ class System:
         self.system_env = dict(principal)
         """ System tags """
         self.username = principal.get("username")
+        self.host = principal.get("host")
         self.annotations = {}
         self.namespace = "default"
         self.serviceaccount = service_account

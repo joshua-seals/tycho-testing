@@ -260,7 +260,7 @@ class TychoContext:
     def update(self, request):
         return self.client.patch(request)
     
-    def start (self, principal, app_id, resource_request):
+    def start (self, principal, app_id, resource_request, host):
         """ Get application metadata, docker-compose structure, settings, and compose API request. """
         spec = self.get_spec (app_id)
         settings = self.client.parse_env (self.get_settings (app_id))
@@ -275,7 +275,7 @@ class TychoContext:
         """ Use a pre-existing k8s service account """
         service_account = self.apps[app_id]['serviceAccount'] if 'serviceAccount' in self.apps[app_id].keys() else None
         """ Add entity's auth information """
-        principal_params = {"username": principal.username, "access_token": principal.access_token, "refresh_token": principal.refresh_token}
+        principal_params = {"username": principal.username, "access_token": principal.access_token, "refresh_token": principal.refresh_token, "host": host}
         principal_params_json = json.dumps(principal_params, indent=4)
         """ Security Context that are set for the app """
         spec["security_context"] = self.apps[app_id]["securityContext"] if 'securityContext' in self.apps[app_id].keys() else {}
