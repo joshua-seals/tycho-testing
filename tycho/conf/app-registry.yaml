@@ -151,6 +151,15 @@ contexts:
       securityContext:
         fsGroup: 0
     apps:
+      jupyter-lab:
+        name: Jupyter Lab
+        description: Jupyter Lab - A Jupyter Lab instance for exploring and visualizing data.
+        details: Includes Python.
+        docs: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-datascience-notebook
+        services:
+          jupyter-lab: "8888"
+        proxy-rewrite-rule: True
+        count: 1
       imagej:
         name: ImageJ Viewer
         description: Imagej is an image processor developed at NIH/LOCI.
