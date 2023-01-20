@@ -53,7 +53,7 @@ repositories:
     description: Main repository for HeLx Apps and Tools
     url: https://github.com/helxplatform/helx-apps/raw/master/app-specs
 settings:
-  helx_registry: docker.io
+  helx_registry: containers.renci.org
   third_party_registry: docker.io
 contexts:
   # The common context provides a convenient base set of applications.
@@ -67,6 +67,16 @@ contexts:
               cmd: ["pgrep", "jupyter" ]
               delay: 5
               period: 5
+      jupyter-lab:
+        ext:
+          kube:
+            livenessProbe:
+              cmd: ["pgrep", "jupyter" ]
+              delay: 5
+              period: 5
+            readinessProbe: 
+              delay: 10
+              period: 10
       jupyter-education:
         ext:
           kube:
@@ -151,15 +161,6 @@ contexts:
       securityContext:
         fsGroup: 0
     apps:
-      jupyter-lab:
-        name: Jupyter Lab
-        description: Jupyter Lab - A Jupyter Lab instance for exploring and visualizing data.
-        details: Includes Python.
-        docs: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-datascience-notebook
-        services:
-          jupyter-lab: "8888"
-        proxy-rewrite-rule: True
-        count: 1
       imagej:
         name: ImageJ Viewer
         description: Imagej is an image processor developed at NIH/LOCI.
@@ -329,6 +330,15 @@ contexts:
         docs: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-datascience-notebook
         services:
           jupyter-education: "8888"
+        proxy-rewrite-rule: True
+        count: 1
+      jupyter-lab:
+        name: Jupyter Lab
+        description: Jupyter Lab - A Jupyter Lab instance for exploring and visualizing data.
+        details: Includes Python.
+        docs: https://jupyter-docker-stacks.readthedocs.io/en/latest/using/selecting.html#jupyter-datascience-notebook
+        services:
+          jupyter-lab: "8888"
         proxy-rewrite-rule: True
         count: 1
       filebrowser:
