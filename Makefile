@@ -1,7 +1,7 @@
 SHELL 			 := /bin/bash
 BRANCH_NAME	 	 := $(shell git branch --show-current | sed -r 's/[/]+/_/g')
 override VERSION := ${BRANCH_NAME}-${VER}
-PYTHON       := /usr/bin/env python3
+PYTHON       := python3
 DOCKER_REPO  = docker.io
 DOCKER_OWNER = helxplatform
 DOCKER_APP	 = tycho-api
@@ -41,6 +41,12 @@ install:
 test:
 	# ${PYTHON} -m flake8 src
 	${PYTHON} -m pytest tests
+
+package.build: ${PYTHON} -m build
+
+package.release:
+	${PYTHON} -m twine upload dist/*
+	rm -rf dist
 
 build:
 	@if [ -z "$(VER)" ]; then echo "Please provide a value for the VER variable like this:"; echo "make VER=4 <target>"; false; fi;
