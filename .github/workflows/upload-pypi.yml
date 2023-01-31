@@ -24,9 +24,11 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install build
+          python -m pip install --upgrade build
+          python -m pip install --upgrade twine
       - name: Build package
         run: python -m build
+        # Just adding the test-pypi publish currently.
       - name: Upload to test-pypi
         run: twine upload --repository testpypi dist/*
         shell: bash
