@@ -37,9 +37,14 @@ jobs:
       - name: Build package
         run: python -m build
         # Just adding the test-pypi publish currently.
-      - name: Upload to test-pypi
-        run: twine upload --repository testpypi dist/*
-        shell: bash
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      # - name: Upload to test-pypi
+      #   run: twine upload --repository testpypi dist/*
+      #   shell: bash
+      #   env:
+      #     TWINE_USERNAME: __token__
+      #     TWINE_PASSWORD: ${{ secrets.TEST_PYPI_API_TOKEN }}
+      - name: Publish package to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.TEST_PYPI_API_TOKEN }}
+          repository_url: https://test.pypi.org/legacy/
